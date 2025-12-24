@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  labels:
+    app: user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: soufyan2003/car-renting:user-service
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-svc:5432/user_service_db
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: JWT_SECRET
+            - name: JWT_EXPIRATION
+              value: "3600000"
+            - name: kafka.replicas
+              value: "1"
+            - name: kafka.partitions
+              value: "3"
+            - name: kafka.topic
+              value: car-rental-events
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-prod:9092
+            - name: EUREKA_CLIENT_ENABLED
+              value: "false"
+            - name: SPRING_CLOUD_CONFIG_ENABLED
+              value: "false"
+            - name: SPRING_CONFIG_IMPORT
+              value: "optional:configserver:"
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+            - name: LOGGING_LEVEL_COM_SOUFYAN
+              value: DEBUG
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB
+              value: DEBUG
+            - name: kafka.group-id
+              value: car-rental-group
