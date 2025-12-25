@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: soufyan2003/car-renting:user-service
-          imagePullPolicy: Always
+          image: ${IMAGE}
+          imagePullPolicy: IfNotPresent
           resources:
             requests:
               memory: "128Mi"
@@ -69,3 +69,16 @@ spec:
               value: DEBUG
             - name: kafka.group-id
               value: car-rental-group
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service-svc 
+spec: 
+  selector: 
+    app: user-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  
