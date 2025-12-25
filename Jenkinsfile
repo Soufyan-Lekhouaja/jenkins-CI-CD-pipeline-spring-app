@@ -55,7 +55,14 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                sh 'docker push $FULL_IMAGE'
+                sh '''
+                    # Push dynamic tag
+                    docker push $FULL_IMAGE
+
+                    # Optional: also push latest
+                    docker tag $FULL_IMAGE $ACR_LOGIN/$IMAGE_NAME:latest
+                    docker push $ACR_LOGIN/$IMAGE_NAME:latest
+                '''
             }
         }
 
@@ -66,14 +73,24 @@ pipeline {
                         set -e
                         export KUBECONFIG=$KUBECONFIG_FILE
 
-                        kubectl get nodes
+                        export FULL_IMAGE=${ACR_LOGIN}/${IMAGE_NAME}:${BUILD_NUMBER}
 
+                        echo "Deploying image: $FULL_IMAGE"
+
+                        # Apply secrets
                         kubectl apply -f k8s/secret.yaml
-                        envsubst < k8s/deployment.yaml | kubectl apply -f -
+
+                        # Substitute FULL_IMAGE in deployment.yaml dynamically
+                        envsubst '${FULL_IMAGE}' < k8s/deployment.yaml | kubectl apply -f -
+
+                        # Apply ingress
                         kubectl apply -f k8s/ingress.yaml
 
-                        kubectl rollout status deployment/user-service
-                        kubectl get pods
+                        # Wait for rollout
+                        kubectl rollout status deployment/user-service -n $K8S_NAMESPACE
+
+                        # Show pods
+                        kubectl get pods -n $K8S_NAMESPACE
                     '''
                 }
             }
@@ -82,10 +99,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo "Pipeline completed successfully!"
         }
         failure {
-            echo 'Pipeline failed!'
+            echo "Pipeline failed!"
         }
     }
 }
