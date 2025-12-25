@@ -63,10 +63,11 @@ pipeline {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     sh '''
                 export KUBECONFIG=$KUBECONFIG_FILE
-                kubectl get nodes       # debug: check connectivity
-                envsubst < k8s/deployment.yml | kubectl apply -f -
-                kubectl apply -f k8s/postgres.yml
-                kubectl apply -f k8s/ingress.yml
+                kubectl get nodes       
+                kubectl apply -f k8s/secret.yaml
+                envsubst < k8s/deployment.yaml | kubectl apply -f -
+                kubectl apply -f k8s/postgres.yaml
+                kubectl apply -f k8s/ingress.yaml
             '''
                 }
             }
