@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: ${IMAGE}
+          image: ${FULL_IMAGE}
           imagePullPolicy: IfNotPresent
           resources:
             requests:
