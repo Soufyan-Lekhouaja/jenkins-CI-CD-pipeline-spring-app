@@ -28,57 +28,80 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            # ---------- Azure PostgreSQL ----------
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_HOST
+
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_PORT
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_NAME
+
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_USERNAME
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_PASSWORD
+
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-svc:5432/user_service_db
+              value: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require
+
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: app-secret
                   key: DB_USERNAME
+
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: app-secret
                   key: DB_PASSWORD
+
+            # ---------- JPA ----------
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+
+            # ---------- Security ----------
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: app-secret
                   key: JWT_SECRET
+
             - name: JWT_EXPIRATION
               value: "3600000"
-            - name: kafka.replicas
-              value: "1"
-            - name: kafka.partitions
-              value: "3"
-            - name: kafka.topic
-              value: car-rental-events
-            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: kafka-prod:9092
-            - name: EUREKA_CLIENT_ENABLED
-              value: "false"
-            - name: SPRING_CLOUD_CONFIG_ENABLED
-              value: "false"
-            - name: SPRING_CONFIG_IMPORT
-              value: "optional:configserver:"
-            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
-              value: update
+
+            # ---------- Logging ----------
             - name: LOGGING_LEVEL_COM_SOUFYAN
               value: DEBUG
             - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB
               value: DEBUG
-            - name: kafka.group-id
-              value: car-rental-group
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-service-svc 
-spec: 
-  selector: 
+  name: user-service-svc
+spec:
+  selector:
     app: user-service
   ports:
     - protocol: TCP
       port: 8080
       targetPort: 8080
-  
