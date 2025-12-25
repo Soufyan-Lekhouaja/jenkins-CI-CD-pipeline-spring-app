@@ -9,11 +9,12 @@ pipeline {
         IMAGE_TAG  = "${env.BUILD_NUMBER}"
         FULL_IMAGE = "${ACR_LOGIN}/${IMAGE_NAME}:${IMAGE_TAG}"
 
-        // Kubernetes namespace
+        // Kubernetes
         K8S_NAMESPACE = 'default'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -58,17 +59,22 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to AKS') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     sh '''
-                export KUBECONFIG=$KUBECONFIG_FILE
-                kubectl get nodes       
-                kubectl apply -f k8s/secret.yaml
-                envsubst < k8s/deployment.yaml | kubectl apply -f -
-                kubectl apply -f k8s/postgres.yaml
-                kubectl apply -f k8s/ingress.yaml
-            '''
+                        set -e
+                        export KUBECONFIG=$KUBECONFIG_FILE
+
+                        kubectl get nodes
+
+                        kubectl apply -f k8s/secret.yaml
+                        envsubst < k8s/deployment.yaml | kubectl apply -f -
+                        kubectl apply -f k8s/ingress.yaml
+
+                        kubectl rollout status deployment/user-service
+                        kubectl get pods
+                    '''
                 }
             }
         }
