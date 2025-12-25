@@ -3,18 +3,17 @@ pipeline {
 
     environment {
         // Docker / ACR
-        ACR_NAME   = "userserviceregistry"
+        ACR_NAME   = 'userserviceregistry'
         ACR_LOGIN  = "${ACR_NAME}.azurecr.io"
-        IMAGE_NAME = "user-service"
+        IMAGE_NAME = 'user-service'
         IMAGE_TAG  = "${env.BUILD_NUMBER}"
         FULL_IMAGE = "${ACR_LOGIN}/${IMAGE_NAME}:${IMAGE_TAG}"
 
         // Kubernetes namespace
-        K8S_NAMESPACE = "default"
+        K8S_NAMESPACE = 'default'
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -63,17 +62,15 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     sh '''
-                        export KUBECONFIG=$KUBECONFIG_FILE
-                        # Substitute the image in deployment.yaml
-                        export IMAGE=$FULL_IMAGE
-                        envsubst < k8s/deployment.yml | kubectl apply -f -
-                        kubectl apply -f k8s/postgres.yml
-                        kubectl apply -f k8s/ingress.yml
-                    '''
+                export KUBECONFIG=$KUBECONFIG_FILE
+                kubectl get nodes       # debug: check connectivity
+                envsubst < k8s/deployment.yml | kubectl apply -f -
+                kubectl apply -f k8s/postgres.yml
+                kubectl apply -f k8s/ingress.yml
+            '''
                 }
             }
         }
-
     }
 
     post {
