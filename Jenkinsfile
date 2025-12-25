@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        # Docker / ACR
+        // Docker / ACR
         ACR_NAME   = "userserviceregistry"
         ACR_LOGIN  = "${ACR_NAME}.azurecr.io"
         IMAGE_NAME = "user-service"
         IMAGE_TAG  = "${env.BUILD_NUMBER}"
         FULL_IMAGE = "${ACR_LOGIN}/${IMAGE_NAME}:${IMAGE_TAG}"
 
-        # Kubernetes namespace
+        // Kubernetes namespace
         K8S_NAMESPACE = "default"
     }
 
