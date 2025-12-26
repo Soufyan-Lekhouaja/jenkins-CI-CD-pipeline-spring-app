@@ -29,30 +29,26 @@ spec:
             - containerPort: 8080
           env:
             # ---------- Azure PostgreSQL ----------
-           
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: app-secret
-                  key: DB_USERNAME
-
+                  name: user-service-kv-secrets
+                  key: DB-USERNAME
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: app-secret
-                  key: DB_PASSWORD
-
+                  name: user-service-kv-secrets
+                  key: DB-PASSWORD
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: app-secret
-                  key: DB_USERNAME
-
+                  name: user-service-kv-secrets
+                  key: DB-USERNAME
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: app-secret
-                  key: DB_PASSWORD
+                  name: user-service-kv-secrets
+                  key: DB-PASSWORD
 
             # ---------- JPA ----------
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO
@@ -62,9 +58,8 @@ spec:
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: app-secret
-                  key: JWT_SECRET
-
+                  name: user-service-kv-secrets
+                  key: JWT-SECRET
             - name: JWT_EXPIRATION
               value: "3600000"
 
@@ -73,6 +68,21 @@ spec:
               value: DEBUG
             - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB
               value: DEBUG
+
+          # ---------- Mount Key Vault Secrets via CSI ----------
+          volumeMounts:
+            - name: secrets-store
+              mountPath: "/mnt/secrets"
+              readOnly: true
+
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: user-service-kv
+
 ---
 apiVersion: v1
 kind: Service
