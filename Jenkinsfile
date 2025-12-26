@@ -75,9 +75,6 @@ pipeline {
 
                         echo "Deploying image: $FULL_IMAGE"
 
-                        # Apply SecretProviderClass (for Key Vault CSI)
-                        kubectl apply -f k8s/secret-provider.yaml
-
                         # Apply deployment with dynamic image
                         envsubst '${FULL_IMAGE}' < k8s/deployment.yaml | kubectl apply -f -
 
