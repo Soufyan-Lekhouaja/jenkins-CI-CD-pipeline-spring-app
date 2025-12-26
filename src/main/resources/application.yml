@@ -3,7 +3,7 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:postgresql://pipelinepostgresdb.postgres.database.azure.com:5432/userdb?sslmode=require
+    url: jdbc:postgresql://soufyanpipelinepostgresdb.postgres.database.azure.com:5432/userdb?sslmode=require
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
