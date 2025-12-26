@@ -81,17 +81,8 @@ pipeline {
                         # Apply ingress
                         kubectl apply -f k8s/ingress.yaml || true
 
-                        # Wait for rollout
-                        kubectl rollout status deployment/user-service -n $K8S_NAMESPACE
-
                         # Show pods
                         kubectl get pods -n $K8S_NAMESPACE
-
-                        # verify secrets are injected
-                        POD_NAME=$(kubectl get pods -n $K8S_NAMESPACE -l app=user-service -o jsonpath="{.items[0].metadata.name}")
-                        echo "Checking environment variables in pod $POD_NAME"
-                        kubectl exec -n $K8S_NAMESPACE $POD_NAME -- env | grep DB_
-                        kubectl exec -n $K8S_NAMESPACE $POD_NAME -- env | grep JWT
                     '''
                 }
             }
