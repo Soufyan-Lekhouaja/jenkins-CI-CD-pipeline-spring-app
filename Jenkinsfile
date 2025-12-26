@@ -73,6 +73,7 @@ pipeline {
                         export KUBECONFIG=$KUBECONFIG_FILE
                         export FULL_IMAGE=${ACR_LOGIN}/${IMAGE_NAME}:${BUILD_NUMBER}
 
+                        kubectl apply -f k8s/secret.yaml
                         echo "Deploying image: $FULL_IMAGE"
 
                         # Apply deployment with dynamic image
